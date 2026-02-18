@@ -2,7 +2,6 @@
 #include <string.h>
 #ifdef __APPLE__
 #include <sys/sysctl.h>
-#include <TargetConditionals.h>
 #else
 #include <sys/sysinfo.h>
 #endif
@@ -69,9 +68,12 @@ get_block(DiskInterface* disk, cache *cache, uint64_t inum, uint64_t pnum)
 		return cache->cache[index].page_data;
 	} else {
 		// Block found in cache - update LRU position
-		int cache_index = lru_pop(cache, cache->cache[rv].lru_pos->next);
-		cache->cache[rv].lru_pos = NULL;
-		cache->cache[rv].lru_pos = lru_push(cache, cache_index);
+		if (cache->lru_size > 1)
+		{
+			int cache_index = lru_pop(cache, cache->cache[rv].lru_pos->next);
+			cache->cache[rv].lru_pos = NULL;
+			cache->cache[rv].lru_pos = lru_push(cache, cache_index);
+		}
 
 		return cache->cache[rv].page_data;
 	}
