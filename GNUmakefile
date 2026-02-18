@@ -1,4 +1,11 @@
-CFLAGS = -lbsd -g
+CFLAGS = -g
+
+UNAME_S := $(shell uname -s)
+
+# Linux-specific flags
+ifneq ($(UNAME_S), Darwin)
+    CFLAGS += -lbsd
+endif
 
 all:
 	clang $(CFLAGS) -o cache_test *.c

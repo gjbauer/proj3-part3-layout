@@ -1,6 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+#include <TargetConditionals.h>
+#else
 #include <sys/sysinfo.h>
+#endif
 #include <sys/param.h>
 #ifdef __linux__
 #include <bsd/stdlib.h>
@@ -165,15 +170,33 @@ void cache_sync(DiskInterface* disk, cache *cache)
 cache* alloc_cache()
 {
 	// Determine cache size based on available system memory
+	int gb_ram = 0;
+	int64_t physical_memory;
+#ifdef __APPLE__
+	int mib[2];
+    size_t length;
+
+    // Set up the MIB (Management Information Base) for hw.memsize
+    mib[0] = CTL_HW;
+    mib[1] = HW_MEMSIZE;
+    length = sizeof(int64_t);
+
+    // Call sysctl to get the memory size
+    if (sysctl(mib, 2, &physical_memory, &length, NULL, 0) == 0) {
+        gb_ram = physical_memory / (1024 * 1024 * 1024);
+    }
+#else
 	struct sysinfo info;
 	sysinfo(&info);
-	int gb_ram = info.totalram / (1024 * 1024 * 1024);
+	gb_ram = info.totalram / (1024 * 1024 * 1024);
+	physical_memory = info.totalram;
+#endif
 	uint64_t cache_size = 0;
 	
 	// Cache sizing policy based on available RAM
 	if (gb_ram < 2) cache_size = (64 * 1024 * 1024) / 4096;  // 64MB cache for low memory systems
-	else if (gb_ram > 2 && gb_ram <= 16) cache_size = info.totalram / (8 * 4096);  // 1/8 of RAM
-	else cache_size = MIN( (2*1024*1024), (info.totalram / (8 * 4096)));  // Cap at 2GB
+	else if (gb_ram > 2 && gb_ram <= 16) cache_size = physical_memory / (8 * 4096);  // 1/8 of RAM
+	else cache_size = MIN( (2*1024*1024), (physical_memory / (8 * 4096)));  // Cap at 2GB
 	
 	// Allocate main cache structure
 	cache *cache = malloc(sizeof(struct cache));
