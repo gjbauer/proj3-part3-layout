@@ -8,7 +8,7 @@ ifeq ($(UNAME_S), Linux)
     CFLAGS += -lbsd
 endif
 
-# Linux-specific flags
+# macOS-specific flags
 ifeq ($(UNAME_S), Darwin)
     RM_FILES += cache_test.dSYM
 endif
