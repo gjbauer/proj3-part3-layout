@@ -26,6 +26,6 @@ clean:
 	rm -rf $(RM_FILES)
 
 open:
-	gedit *.h *.c
+	nvim -p *.h *.c
 
 .PHONY: clean open

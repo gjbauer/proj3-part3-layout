@@ -13,6 +13,6 @@ clean:
 	rm cache_test my.img
 
 open:
-	gedit *.h *.c
+	nvim -p *.h *.c
 
 .PHONY: clean open
