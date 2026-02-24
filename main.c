@@ -12,6 +12,8 @@ int main()
 	
 	alloc_page(disk, cache);  // Reserve block 0
 	BTreeNode *root = btree_node_create(disk, cache, false); 
+
+	printf("Size of nodes: %llu", sizeof(BTreeNode));
 	
 	while (true) {
 		printf("Select:\n(1) to insert a key\n(2) to search for a key\n(3) for debug print\n(4) to delete a key\n(5) to simulate sync\n> ");
