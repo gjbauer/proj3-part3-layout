@@ -1,11 +1,16 @@
 #include "bitmap.h"
+#include "config.h"
 
 /**
  * Get the value of a bit at the specified index
  * Uses 64-bit words for efficient access
  */
 int bitmap_get(void* bm, int ii) {
-	uint64_t* ptr = (uint64_t*)bm;
+	uint64_t* ptr;
+	if ( (ii % USABLE_BLOCK_SIZE) ) ptr = (uint64_t*)( (char*) bm + (ii / BLOCK_SIZE));
+	block_type_t *block_type = (block_type_t*)ptr;
+	if (block_type != BLOCK_TYPE_BITMAP) return -1;
+	ptr = (uint64_t*)( (block_type_t*) bm + 1);
 	ptr = ptr + ( ii / 64 );  // Find the 64-bit word containing our bit
 	return (*ptr & ((uint64_t)1 << (ii % 64))) >> (ii % 64);  // Extract the bit
 }
@@ -15,7 +20,11 @@ int bitmap_get(void* bm, int ii) {
  * Uses bitwise operations for efficient manipulation
  */
 void bitmap_put(void* bm, int ii, int vv) {
-	uint64_t* ptr = (uint64_t*)bm;
+	uint64_t* ptr;
+	if ( (ii % USABLE_BLOCK_SIZE) ) ptr = (uint64_t*)( (char*) bm + (ii / BLOCK_SIZE) );
+	block_type_t *block_type = (block_type_t*)ptr;
+	if (block_type != BLOCK_TYPE_BITMAP) return; // TODO: Change return type to int to detect failures and overflows...
+	ptr = (uint64_t*)( (block_type_t*) bm + 1);
 	ptr = ptr + ( ii / 64 );  // Find the 64-bit word containing our bit
 	// Clear bit if vv==0, set bit otherwise
 	*ptr = (vv==0) ? *ptr & ~((uint64_t)1 << (ii % 64)) : *ptr | ((uint64_t)1 << (ii % 64));
@@ -26,8 +35,13 @@ void bitmap_put(void* bm, int ii, int vv) {
  * Shows each bit as 0 or 1
  */
 void bitmap_print(void* bm, int size) {
+	block_type_t *block_type = (block_type_t*)bm;
+	if (block_type != BLOCK_TYPE_BITMAP) return;
+	ptr = (uint64_t*)( (block_type_t*) bm + 1);
 	printf("===BITMAP START===\n");
 	for (int ii = 0; ii < size; ++ii) {
+		if ( (ii % USABLE_BLOCK_SIZE) ) bm = (void*)( (char*) bm + BLOCK_SIZE );
+		if (block_type != BLOCK_TYPE_BITMAP) break;
 		printf("%d", bitmap_get(bm, ii));
 	}
 	printf("\n===BITMAP END===\n");

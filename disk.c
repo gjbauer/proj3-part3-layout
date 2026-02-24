@@ -160,6 +160,7 @@ free_page(DiskInterface* disk, cache *cache, int pnum)
 	cache->cache[index].gdl_pos = cache->gdl;
 	#endif
 	bitmap_put(pbm, pnum, 0);  // Mark block as free
+	//write_block(disk, cache, pbm, 0, 0);
 }
 
 /**
