@@ -40,7 +40,7 @@ void bitmap_print(void* bm, int size) {
 	ptr = (uint64_t*)( (block_type_t*) bm + 1);
 	printf("===BITMAP START===\n");
 	for (int ii = 0; ii < size; ++ii) {
-		if ( (ii % USABLE_BLOCK_SIZE) ) bm = (void*)( (char*) bm + BLOCK_SIZE );
+		if ( (ii % USABLE_BLOCK_SIZE) && ( ii > 0 ) ) bm = (void*)( (char*) bm + BLOCK_SIZE );
 		if (block_type != BLOCK_TYPE_BITMAP) break;
 		printf("%d", bitmap_get(bm, ii));
 	}
