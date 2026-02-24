@@ -23,7 +23,7 @@ int bitmap_get(void* bm, int ii);
  * @param ii Bit index to modify
  * @param vv Value to set (0 to clear, non-zero to set)
  */
-void bitmap_put(void* bm, int ii, int vv);
+int bitmap_put(void* bm, int ii, int vv);
 
 /**
  * Print the bitmap for debugging purposes
