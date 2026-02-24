@@ -40,7 +40,7 @@ typedef enum {
  * - Reasonable performance for small to medium datasets
  * - Fits comfortably within a 4KB block with metadata
  */
-#define MAX_KEYS 4
+#define MAX_KEYS 250
 
 /**
  * Minimum number of keys per B-tree node (except root)
