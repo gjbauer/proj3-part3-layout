@@ -21,7 +21,7 @@ typedef struct Superblock {
 // Superblock operations
 int superblock_read(DiskInterface* disk, Superblock* superblock);
 int superblock_write(DiskInterface* disk, const Superblock* superblock);
-int superblock_initialize(DiskInterface* disk, const char* volume_name);
+int superblock_initialize(DiskInterface* disk, cache *cache, const char* volume_name);
 
 #endif
 

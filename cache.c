@@ -16,6 +16,11 @@
 void*
 get_block(DiskInterface* disk, cache *cache, uint64_t inum, uint64_t pnum)
 {
+	#ifdef CACHE_DISABLED
+	void *page = malloc(BLOCK_SIZE);
+	disk_read_block(disk, pnum, page);
+	return page;
+	#else
 	// Check if block is already in cache using primary cache index
 	int rv = pci_lookup(cache->pci, pnum);
 	if (rv==-1) {
@@ -77,11 +82,13 @@ get_block(DiskInterface* disk, cache *cache, uint64_t inum, uint64_t pnum)
 
 		return cache->cache[rv].page_data;
 	}
+	#endif
 }
 
 void
 write_block(DiskInterface* disk, cache *cache, void *buf, uint64_t inum, uint64_t pnum)
 {
+	#ifndef CACHE_DISABLED
 	// Look up block in cache using primary cache index
 	int index = pci_lookup(cache->pci, pnum);
 	if (index==-1)
@@ -106,10 +113,12 @@ write_block(DiskInterface* disk, cache *cache, void *buf, uint64_t inum, uint64_
 	// Add to global dirty list for sync operations
 	cache->gdl = gdl_push(cache, index);
 	cache->cache[index].gdl_pos = cache->gdl;
+	#endif
 }
 
 void cache_fsync(DiskInterface* disk, cache *cache, uint64_t inum)
 {
+	#ifndef CACHE_DISABLED
 	// Look up all dirty blocks for this specific inode
 	DL_HM_LL *hmlist = dl_lookup(cache->dirty_list, inum);
 	DL_HM_LL *prev;
@@ -139,10 +148,12 @@ void cache_fsync(DiskInterface* disk, cache *cache, uint64_t inum)
 		// Remove entire inode entry from dirty list
 		dl_delete(cache->dirty_list, inum);
 	}
+	#endif
 }
 
 void cache_sync(DiskInterface* disk, cache *cache)
 {
+	#ifndef CACHE_DISABLED
 	// Sync all dirty blocks to disk using global dirty list
 	GDL *curr = cache->gdl;
 	while (curr!=NULL)
@@ -167,10 +178,12 @@ void cache_sync(DiskInterface* disk, cache *cache)
 		// Remove from per-inode dirty list if it's a data block
 		if (block_type==BLOCK_TYPE_DATA) dl_remove_block(cache->dirty_list, cache->cache[index].inode_number, cache->cache[index].block_number);
 	}
+	#endif
 }
 
 cache* alloc_cache()
 {
+	#ifndef CACHE_DISABLED
 	// Determine cache size based on available system memory
 	int gb_ram = 0;
 	int64_t physical_memory;
@@ -248,10 +261,12 @@ cache* alloc_cache()
 	cache->lru=NULL;
 	cache->gdl=NULL;
 	return cache;
+	#endif
 }
 
 void free_cache(cache *cache)
 {
+	#ifndef CACHE_DISABLED
 	// Clean up global dirty list
 	for (int i=cache->gdl_size; i>0; i--)
 	{
@@ -327,4 +342,5 @@ void free_cache(cache *cache)
 	free(cache->cache);
 	arc4random_buf(cache, sizeof(struct cache));
 	free(cache);
+	#endif
 }
