@@ -3,6 +3,24 @@
 #include <string.h>
 #include "config.h"
 #include <stdint.h>
+#include "inode.h"
+
+// Superblock operations
+int superblock_read(DiskInterface* disk, cache *cache, Superblock* superblock)
+{
+    block_type_t *block_type = (block_type_t*)get_block(disk, cache, 0, 0);
+    if (*block_type != BLOCK_TYPE_SUPER) return -1;
+    memcpy(superblock, (Superblock*) ( block_type + 1 ), sizeof(Superblock));
+    return 0;
+}
+
+int superblock_write(DiskInterface* disk, cache *cache, const Superblock* superblock)
+{
+    block_type_t *block_type = (block_type_t*)get_block(disk, cache, 0, 0);
+    if (*block_type != BLOCK_TYPE_SUPER) return -1;
+    memcpy( (Superblock*) ( block_type + 1 ), superblock, sizeof(Superblock));
+    return 0;
+}
 
 int superblock_initialize(DiskInterface* disk, cache *cache, const char* volume_name)
 {
@@ -15,9 +33,23 @@ int superblock_initialize(DiskInterface* disk, cache *cache, const char* volume_
     superblock->block_size = BLOCK_SIZE;
     superblock->total_blocks = disk->total_blocks;
     printf("Total blocks: %lu\n", superblock->total_blocks);
-    uint32_t bitmap_space = (superblock->total_blocks % USABLE_BLOCK_SIZE) ? ( (superblock->total_blocks / USABLE_BLOCK_SIZE) + 1 ) : (superblock->total_blocks / USABLE_BLOCK_SIZE);
-    bitmap_space += (superblock->total_blocks % (4*USABLE_BLOCK_SIZE)) ? ( (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) ) + 1 ) : (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) );
-    printf("Number of blocks needed for block bitmap: %llu\n", (superblock->total_blocks % USABLE_BLOCK_SIZE) ? ( (superblock->total_blocks / USABLE_BLOCK_SIZE) + 1 ) : (superblock->total_blocks / USABLE_BLOCK_SIZE) );
-    printf("Number of blocks needed for inode bitmap: %llu\n", (superblock->total_blocks % (4*USABLE_BLOCK_SIZE)) ? ( (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) ) + 1 ) : (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) ) );
-    printf("Total number of blocks needed for bitmaps: %lu\n", bitmap_space);
+    uint32_t block_bitmap_space = (superblock->total_blocks % USABLE_BLOCK_SIZE) ? ( (superblock->total_blocks / USABLE_BLOCK_SIZE) + 1 ) : (superblock->total_blocks / USABLE_BLOCK_SIZE);
+    printf("Number of blocks needed for block bitmap: %llu\n", block_bitmap_space );
+    printf("Number of blocks needed for inode bitmap: %llu\n", calculate_inode_bitmap_size(superblock) );
+    printf("Total number of blocks needed for bitmaps: %lu\n", block_bitmap_space + calculate_inode_bitmap_size(superblock));
+    printf("Blocks reserved for inodes: %lu\n", calculate_inode_table_size(superblock));
+    superblock->inode_bitmap = 1 + block_bitmap_space;
+    printf("%lu\n", superblock->inode_bitmap);
+    return 0;
+}
+
+// inode offsets
+int calculate_inode_bitmap_size(Superblock *superblock)
+{
+    return (superblock->total_blocks % (4*USABLE_BLOCK_SIZE)) ? ( (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) ) + 1 ) : (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) );
+}
+
+int calculate_inode_table_size(Superblock *superblock)
+{
+    return (superblock->total_blocks / 4) / (USABLE_BLOCK_SIZE/sizeof(Inode));
 }
