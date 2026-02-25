@@ -114,7 +114,7 @@ void dl_delete(DL_HM *hashmap, uint64_t inode_number)
 		}
 	}
 	
-	printf("Removing inode %lu from dirty list!\n", inode_number);
+	printf("Removing inode %llu from dirty list!\n", inode_number);
 	// Update chain to bypass deleted node
 	if (prev) {
 		prev->next = curr->next;

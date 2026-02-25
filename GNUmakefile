@@ -1,6 +1,6 @@
 CFLAGS = -g
 RM_FILES = cache_test my.img mkfs.nbtrfs
-ALL_FILES = bitmap.c btr.c cache.c disk.c dl.c fl.c gdl.c hash.c lru.c pci.c superblock.c
+COMMON_FILES = bitmap.c btr.c cache.c disk.c dl.c fl.c gdl.c hash.c lru.c pci.c superblock.c
 
 UNAME_S := $(shell uname -s)
 
@@ -15,15 +15,15 @@ ifeq ($(UNAME_S), Darwin)
 endif
 
 all:
-	clang $(CFLAGS) -o cache_test $(ALL_FILES) main.c
+	clang $(CFLAGS) -o cache_test $(COMMON_FILES) main.c
 	dd if=/dev/zero of=my.img bs=1M count=2
 
 sanitize:
-	clang $(CFLAGS) -fsanitize=address -O0 -o cache_test $(ALL_FILES) main.c
+	clang $(CFLAGS) -fsanitize=address -O0 -o cache_test $(COMMON_FILES) main.c
 	dd if=/dev/zero of=my.img bs=1M count=2
 
 mkfs:
-	clang $(CFLAGS) -o mkfs.nbtrfs $(ALL_FILES) mkfs.c -DCACHE_DISABLED
+	clang $(CFLAGS) -o mkfs.nbtrfs $(COMMON_FILES) mkfs.c -DCACHE_DISABLED
 	dd if=/dev/zero of=my.img bs=1M count=2
 
 clean:

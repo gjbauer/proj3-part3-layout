@@ -12,9 +12,9 @@ int main()
 	cache *cache = NULL;
     Superblock superblock;
 
-    superblock_initialize(disk, cache, "UNTITLED");
-    superblock_read(disk, cache, &superblock);
-    printf("Setting block types to bitmaps for bitmaps...");
+    if (superblock_initialize(disk, cache, "UNTITLED")) fprintf(stderr, "ERROR: Volume name too long");
+    if (superblock_read(disk, cache, &superblock)) fprintf(stderr, "ERROR: Invalid superblock!");
+    printf("Setting block types to bitmaps for bitmaps...\n");
     block_type_t *block_type;
     for (int i=1; i < superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock); i++ )
     {
@@ -23,6 +23,7 @@ int main()
     }
     printf("Usable block size / inode size : %lu\n", USABLE_BLOCK_SIZE/sizeof(Inode));
     printf("Allocating pages for superblock, bitmaps, and inode table...\n");
-    printf("%llu\n", (superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock)));
     for (int i=0; i < (superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock)) ; i++) alloc_page(disk, cache);
+    superblock.free_blocks = superblock.total_blocks - ((superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock)));
+    printf("Free blocks: %llu\n", superblock.free_blocks);
 }

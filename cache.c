@@ -259,6 +259,8 @@ cache* alloc_cache()
 	cache->lru=NULL;
 	cache->gdl=NULL;
 	return cache;
+	#else
+	return NULL;
 	#endif
 }
 

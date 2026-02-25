@@ -26,6 +26,7 @@ int bitmap_put(void* bm, int ii, int vv) {
 	ptr = ptr + ( ii / 64 );  // Find the 64-bit word containing our bit
 	// Clear bit if vv==0, set bit otherwise
 	*ptr = (vv==0) ? *ptr & ~((uint64_t)1 << (ii % 64)) : *ptr | ((uint64_t)1 << (ii % 64));
+	return 0;
 }
 
 /**

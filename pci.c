@@ -60,7 +60,7 @@ void pci_delete(PCI_HM *hashmap, uint64_t block_number)
 		}
 	}
 	
-	printf("Removing key %lu from primary cache index!\n", block_number);
+	printf("Removing key %llu from primary cache index!\n", block_number);
 	// Update chain to bypass deleted node
 	if (prev) {
 		prev->next = curr->next;

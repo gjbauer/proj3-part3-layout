@@ -132,7 +132,7 @@ int btree_find_depth(DiskInterface* disk, cache *cache, uint64_t node_block)
 			btree_node_read(disk, cache, node.children[0], &node);
 			depth++;
 		} else {
-			printf("ERROR: Node is not leaf and child not found!!\n");
+			fprintf(stderr, "ERROR: Node is not leaf and child not found!!\n");
 			return -1;
 		}
 	}
@@ -205,7 +205,7 @@ uint64_t btree_find_maximum(DiskInterface* disk, cache *cache, uint64_t root_blo
 int btree_insert_nonfull(DiskInterface* disk, cache *cache, BTreeNode *root, BTreeNode *node)
 {
 	if (root->is_leaf) {
-		printf("ERROR: Trying to insert into leaf node\n");
+		fprintf(stderr, "ERROR: Trying to insert into leaf node\n");
 		return -1;
 	} else {
 		// Find the correct position for the new child
@@ -242,8 +242,8 @@ int btree_insert_nonfull(DiskInterface* disk, cache *cache, BTreeNode *root, BTr
 			}
 		}
 		
-		printf("Placing node with key %lu at child position %d\n", node->key, child_pos);
-		printf("Block number = %lu\n", node->block_number);
+		printf("Placing node with key %llu at child position %d\n", node->key, child_pos);
+		printf("Block number = %llu\n", node->block_number);
 	}
 	
 	return 0;
@@ -462,7 +462,7 @@ void btree_remove_key(DiskInterface* disk, cache *cache, uint64_t root_block, ui
 		}
 	}
 	for(i=0; i<MAX_KEYS && root.keys[i] < key && root.keys[i]!=0; i++);
-	printf("Removing key %ld from block %ld\n", key, root_block);
+	printf("Removing key %llu from block %llu\n", key, root_block);
 	for(int j=i; j<root.num_keys; j++)
 	{
 		root.keys[j] = root.keys[j+1];
@@ -725,21 +725,21 @@ void btree_print(DiskInterface* disk, cache *cache, uint64_t root_block, int lev
 {
 	BTreeNode node;
 	btree_node_read(disk, cache, root_block, &node);
-	printf("%*sBlock %lu: ", level*2, "", root_block);  // Indent based on level
+	printf("%*sBlock %llu: ", level*2, "", root_block);  // Indent based on level
 	
 	if (node.is_leaf) {
 		// Print leaf node information
-		printf("LEAF key=%lu parent=%lu\n", node.key, node.parent);
+		printf("LEAF key=%llu parent=%llu\n", node.key, node.parent);
 	} else {
 		// Print internal node information
 		printf("INTERNAL keys=[");
 		for(int i = 0; i < node.num_keys; i++) {
-			printf("%lu", node.keys[i]);
+			printf("%llu", node.keys[i]);
 			if (i < node.num_keys-1) printf(",");
 		}
 		printf("] children=[");
 		for(int i = 0; i <= node.num_keys; i++) {
-			printf("%lu", node.children[i]);
+			printf("%llu", node.children[i]);
 			if (i < node.num_keys) printf(",");
 		}
 		printf("]\n");
