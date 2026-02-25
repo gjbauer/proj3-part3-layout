@@ -3,6 +3,7 @@
 
 #include "disk.h"
 #include "config.h"
+#include "types.h"
 
 // Inode structure (file metadata)
 typedef struct Inode {

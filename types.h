@@ -52,4 +52,24 @@ typedef struct cache
 	GDL *gdl;                    // Global dirty list for sync operations
 } cache;
 
+// File types
+typedef enum {
+    FILE_TYPE_REGULAR,
+    FILE_TYPE_DIRECTORY,
+    FILE_TYPE_SYMLINK
+} FileType;
+
+// File permissions
+typedef struct {
+    uint16_t owner_read : 1;
+    uint16_t owner_write : 1;
+    uint16_t owner_execute : 1;
+    uint16_t group_read : 1;
+    uint16_t group_write : 1;
+    uint16_t group_execute : 1;
+    uint16_t other_read : 1;
+    uint16_t other_write : 1;
+    uint16_t other_execute : 1;
+} FilePermissions;
+
 #endif

@@ -4,6 +4,7 @@
 #include "cache.h"
 #include "btr.h"
 #include "superblock.h"
+#include "inode.h"
 
 int main()
 {
@@ -12,4 +13,5 @@ int main()
 	cache *cache = NULL;
 
     superblock_initialize(disk, cache, "UNTITLED");
+    printf("Usable block size / Inode size : %lu", USABLE_BLOCK_SIZE/sizeof(Inode));
 }

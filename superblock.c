@@ -2,6 +2,7 @@
 #include "superblock.h"
 #include <string.h>
 #include "config.h"
+#include <stdint.h>
 
 int superblock_initialize(DiskInterface* disk, cache *cache, const char* volume_name)
 {
@@ -14,5 +15,9 @@ int superblock_initialize(DiskInterface* disk, cache *cache, const char* volume_
     superblock->block_size = BLOCK_SIZE;
     superblock->total_blocks = disk->total_blocks;
     printf("Total blocks: %lu\n", superblock->total_blocks);
+    uint32_t bitmap_space = (superblock->total_blocks % USABLE_BLOCK_SIZE) ? ( (superblock->total_blocks / USABLE_BLOCK_SIZE) + 1 ) : (superblock->total_blocks / USABLE_BLOCK_SIZE);
+    bitmap_space += (superblock->total_blocks % (4*USABLE_BLOCK_SIZE)) ? ( (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) ) + 1 ) : (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) );
     printf("Number of blocks needed for block bitmap: %llu\n", (superblock->total_blocks % USABLE_BLOCK_SIZE) ? ( (superblock->total_blocks / USABLE_BLOCK_SIZE) + 1 ) : (superblock->total_blocks / USABLE_BLOCK_SIZE) );
+    printf("Number of blocks needed for inode bitmap: %llu\n", (superblock->total_blocks % (4*USABLE_BLOCK_SIZE)) ? ( (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) ) + 1 ) : (superblock->total_blocks / (4*USABLE_BLOCK_SIZE) ) );
+    printf("Total number of blocks needed for bitmaps: %lu\n", bitmap_space);
 }

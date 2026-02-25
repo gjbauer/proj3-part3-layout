@@ -114,26 +114,21 @@ get_inode_start(DiskInterface* disk)
 int
 alloc_page(DiskInterface* disk, cache *cache)
 {
-	#ifdef CACHE_DISABLED
-	void* pbm = disk_get_block_bitmap(disk);
-	#else
-	void* pbm = get_block(disk, cache, 0, 0);	// TODO: Change the block bitmap numbers later after integration with superblock/direntries/inodes
-	#endif
+	int pbmn = 1;
+	void* pbm = get_block(disk, cache, 0, pbmn);
 
 	// Search through all blocks to find first free one
 	for (int ii = 0; ii < disk->total_blocks; ++ii) {
+		if ( !(ii % USABLE_BLOCK_SIZE) && ii )
+		{
+			pbmn++;
+			pbm = get_block(disk, cache, 0, pbmn);
+		}
 		if (!bitmap_get(pbm, ii)) {  // Found a free block
 			bitmap_put(pbm, ii, 1);  // Mark it as allocated
-			#ifndef CACHE_DISABLED
-			int index = pci_lookup(cache->pci, 0);
-			cache->cache[index].dirty_bit=true;
-			
-			// Add to global dirty list for sync operations
-			cache->gdl = gdl_push(cache, index);
-			cache->cache[index].gdl_pos = cache->gdl;
-			#endif
+			write_block(disk, cache, pbm, 0, pbmn );
 			printf("+ alloc_page() -> %d\n", ii);
-			return ii;
+			return ii + (pbmn * USABLE_BLOCK_SIZE);
 		}
 	}
 
@@ -147,20 +142,14 @@ alloc_page(DiskInterface* disk, cache *cache)
 void
 free_page(DiskInterface* disk, cache *cache, int pnum)
 {
+	int pbmn = 1 + (pnum / USABLE_BLOCK_SIZE);
 	printf("+ free_page(%d)\n", pnum);
-	#ifdef CACHE_DISABLED
-	void* pbm = disk_get_block_bitmap(disk);
-	#else
-	void* pbm = get_block(disk, cache, 0, 0);	// TODO: Change the block bitmap numbers later after integration with superblock/direntries/inodes
-	int index = pci_lookup(cache->pci, 0);
-	cache->cache[index].dirty_bit=true;
-	
-	// Add to global dirty list for sync operations
-	cache->gdl = gdl_push(cache, index);
-	cache->cache[index].gdl_pos = cache->gdl;
-	#endif
-	bitmap_put(pbm, pnum, 0);  // Mark block as free
-	//write_block(disk, cache, pbm, 0, 0);
+	void* pbm = get_block(disk, cache, 0, pbmn );
+	if (bitmap_put(pbm, pnum, 0))  // Mark block as free
+	{
+		fprintf(stderr, "ERROR: Selected block could not be freed!");
+	}
+	write_block(disk, cache, pbm, 0, pbmn );
 }
 
 /**

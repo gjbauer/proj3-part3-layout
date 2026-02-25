@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include "cache.h"
 
 /**
  * Bitmap operations for managing free/used blocks and inodes
@@ -30,6 +31,6 @@ int bitmap_put(void* bm, int ii, int vv);
  * @param bm Pointer to the bitmap
  * @param size Number of bits to print
  */
-void bitmap_print(void* bm, int size);
+void bitmap_print(DiskInterface *disk, void* bm, cache *cache);
 
 #endif
