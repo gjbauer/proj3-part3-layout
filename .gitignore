@@ -1,3 +1,6 @@
 cache_test
 my.img
 cache_test.dSYM/*
+mkfs.nbtrfs
+mkfs.nbtrfs.dSYM/*
+

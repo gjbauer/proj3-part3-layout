@@ -16,11 +16,9 @@
 void*
 get_block(DiskInterface* disk, cache *cache, uint64_t inum, uint64_t pnum)
 {
-	#ifdef CACHE_DISABLED
-	void *page = malloc(BLOCK_SIZE);
-	disk_read_block(disk, pnum, page);
-	return page;
-	#else
+#ifdef CACHE_DISABLED
+	return disk_get_block(disk, pnum);
+#else
 	// Check if block is already in cache using primary cache index
 	int rv = pci_lookup(cache->pci, pnum);
 	if (rv==-1) {
@@ -82,7 +80,7 @@ get_block(DiskInterface* disk, cache *cache, uint64_t inum, uint64_t pnum)
 
 		return cache->cache[rv].page_data;
 	}
-	#endif
+#endif
 }
 
 void
