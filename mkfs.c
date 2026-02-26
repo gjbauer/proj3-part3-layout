@@ -24,6 +24,9 @@ int main()
     printf("Usable block size / inode size : %lu\n", USABLE_BLOCK_SIZE/sizeof(Inode));
     printf("Allocating pages for superblock, bitmaps, and inode table...\n");
     for (int i=0; i < (superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock)) ; i++) alloc_page(disk, cache);
-    superblock.free_blocks = superblock.total_blocks - ((superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock)));
+    superblock.free_blocks = superblock.total_blocks - (superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock));
     printf("Free blocks: %llu\n", superblock.free_blocks);
+
+    printf("Writing superblock...")
+    superblock_write(disk, cache, &superblock);
 }
