@@ -124,15 +124,15 @@ alloc_page(DiskInterface* disk, cache *cache)
 			pbmn++;
 			pbm = get_block(disk, cache, 0, pbmn);
 		}
-		if (!bitmap_get(pbm, ii)) {  // Found a free block
-			if (bitmap_put(pbm, ii, 1))
+		if (!bitmap_get(pbm, ii - ((pbmn - 1) * USABLE_BLOCK_SIZE))) {  // Found a free block
+			if (bitmap_put(pbm, ii - ((pbmn - 1) * USABLE_BLOCK_SIZE), 1))
 			{
 				fprintf(stderr, "ERROR: Could not allocate page!!");  // Mark it as allocated
 				return -1;
 			}
 			write_block(disk, cache, pbm, 0, pbmn );
 			printf("+ alloc_page() -> %d\n", ii);
-			return ii + (pbmn * USABLE_BLOCK_SIZE);
+			return ii - ((pbmn - 1) * USABLE_BLOCK_SIZE);
 		}
 	}
 
@@ -149,7 +149,7 @@ free_page(DiskInterface* disk, cache *cache, int pnum)
 	int pbmn = 1 + (pnum / USABLE_BLOCK_SIZE);
 	printf("+ free_page(%d)\n", pnum);
 	void* pbm = get_block(disk, cache, 0, pbmn );
-	if (bitmap_put(pbm, pnum, 0))  // Mark block as free
+	if (bitmap_put(pbm, pnum - ((pbmn - 1) * USABLE_BLOCK_SIZE), 0))  // Mark block as free
 	{
 		fprintf(stderr, "ERROR: Selected block could not be freed!");
 	}

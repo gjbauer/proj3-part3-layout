@@ -5,6 +5,7 @@
 #include "btr.h"
 #include "superblock.h"
 #include "inode.h"
+#include "hash.h"
 
 int main()
 {
@@ -27,6 +28,12 @@ int main()
     superblock.free_blocks = superblock.total_blocks - (superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock));
     printf("Free blocks: %llu\n", superblock.free_blocks);
 
-    printf("Writing superblock...")
+    printf("Writing superblock...\n");
     superblock_write(disk, cache, &superblock);
+
+    printf("Creating root tree node...\n");
+    BTreeNode *root = btree_node_create(disk, cache, false);
+    printf("Creating leaf node for root directory with key %llu\n", path_hash("/"));
+    btree_insert(disk, cache, root->block_number, path_hash("/"), 0);   // TODO: Implement inode functions and set the value argument to the allocated page
+
 }

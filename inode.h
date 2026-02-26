@@ -31,11 +31,5 @@ int inode_free(DiskInterface* disk, uint64_t inode_number);
 int inode_get_block(DiskInterface* disk, Inode* inode, uint64_t block_index, uint64_t* physical_block);
 int inode_set_block(DiskInterface* disk, Inode* inode, uint64_t block_index, uint64_t physical_block);
 
-// Block allocation
-uint64_t block_allocate(DiskInterface* disk);
-int block_free(DiskInterface* disk, uint64_t block_num);
-int block_read_data(DiskInterface* disk, uint64_t block_num, void* buffer, size_t offset, size_t length);
-int block_write_data(DiskInterface* disk, uint64_t block_num, const void* buffer, size_t offset, size_t length);
-
 #endif
 
