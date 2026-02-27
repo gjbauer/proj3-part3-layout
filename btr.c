@@ -365,6 +365,7 @@ void btree_update_parent_keys(DiskInterface* disk, cache *cache, BTreeNode* node
 	}
 	
 	btree_node_write(disk, cache, &parent);
+	arc4random_buf(&parent, sizeof(struct BTreeNode));
 }
 
 int btree_insert(DiskInterface* disk, cache *cache, uint64_t root_block, uint64_t key, uint64_t value)
@@ -407,6 +408,7 @@ int btree_insert(DiskInterface* disk, cache *cache, uint64_t root_block, uint64_
 	}
 
 	btree_update_parent_keys(disk, cache, node);
+	arc4random_buf(&target, sizeof(struct BTreeNode));
 	
 	return 0;
 }
@@ -438,6 +440,7 @@ int btree_borrow_left(DiskInterface* disk, cache *cache, BTreeNode *node)
 			}
 		}
 		btree_node_write(disk, cache, &left_sibling);
+		arc4random_buf(&left_sibling, sizeof(struct BTreeNode));
 	}
 	return rv;
 }
@@ -472,6 +475,7 @@ int btree_borrow_right(DiskInterface* disk, cache *cache, BTreeNode *node)
 			right_sibling.num_keys--;
 		}
 		btree_node_write(disk, cache, &right_sibling);
+		arc4random_buf(&right_sibling, sizeof(struct BTreeNode));
 	}
 	return rv;
 }
@@ -482,7 +486,8 @@ void btree_remove_key(DiskInterface* disk, cache *cache, uint64_t root_block, ui
 	btree_node_read(disk, cache, root_block, &root);
 	int i;
 	for(i=0; i<MAX_KEYS && root.keys[i] < key && root.keys[i]!=0; i++);
-	BTreeNode *node = (BTreeNode*)get_block(disk, cache, 0, root.children[i]);
+	BTreeNode node;
+	btree_node_read(disk, cache, root.children[i], &node);
 	BTreeNode borrowed;
 	int rv;
 	if (root.num_keys==MIN_KEYS && root.parent!=0)
@@ -497,6 +502,7 @@ void btree_remove_key(DiskInterface* disk, cache *cache, uint64_t root_block, ui
 				for(j=0; j<MAX_KEYS && grandparent.keys[j] < key && grandparent.keys[j]!=0; j++);
 				btree_merge_children(disk, cache, &grandparent, j);
 				btree_node_write(disk, cache, &grandparent);
+				arc4random_buf(&grandparent, sizeof(struct BTreeNode));
 			}
 		}
 	}
@@ -522,9 +528,13 @@ void btree_remove_key(DiskInterface* disk, cache *cache, uint64_t root_block, ui
 	if (rv!=-1) {
 		btree_node_read(disk, cache, rv, &borrowed);
 		btree_insert_nonfull(disk, cache, &root, &borrowed);
+		arc4random_buf(&borrowed, sizeof(struct BTreeNode));
 	}
-	btree_update_parent_keys(disk, cache, node);
+	btree_update_parent_keys(disk, cache, &node);
 	btree_node_write(disk, cache, &root);
+
+	arc4random_buf(&root, sizeof(struct BTreeNode));
+	arc4random_buf(&node, sizeof(struct BTreeNode));
 	
 	return;
 }
@@ -540,6 +550,8 @@ int btree_delete(DiskInterface* disk, cache *cache, uint64_t root_block, uint64_
 		btree_remove_key(disk, cache, node.parent, key);
 		btree_node_free(disk, cache, &node);
 	}
+
+	arc4random_buf(&node, sizeof(struct BTreeNode));
 	
 	return rv;
 }
@@ -555,15 +567,21 @@ void btree_split_root(DiskInterface* disk, cache *cache, BTreeNode* root)
 		child_a->keys[i] = root->keys[i];
 		child_a->children[i] = root->children[i];
 		if (root->children[i] != 0) {
-			BTreeNode *child = (BTreeNode*)get_block(disk, cache, 0, root->children[i]);
-			child->parent = child_a->block_number;
+			BTreeNode child;
+			btree_node_read(disk, cache, root.children[i], &child);
+			child.parent = child_a->block_number;
+			btree_node_write(disk, cache, &child);
+			arc4random_buf(&child, sizeof(struct BTreeNode));
 		}
 		child_a->num_keys++;
 	}
 	child_a->children[MIN_KEYS] = root->children[MIN_KEYS];
 	if (root->children[MIN_KEYS] != 0) {
-		BTreeNode *child = (BTreeNode*)get_block(disk, cache, 0, root->children[MIN_KEYS]);
-		child->parent = child_a->block_number;
+		BTreeNode child;
+		btree_node_read(disk, cache, root.children[MIN_KEYS], &child);
+		child.parent = child_a->block_number;
+		btree_node_write(disk, cache, &child);
+		arc4random_buf(&child, sizeof(struct BTreeNode));
 	}
 	
 	for (int i = MIN_KEYS + 1; i < root->num_keys; i++) {
@@ -573,15 +591,21 @@ void btree_split_root(DiskInterface* disk, cache *cache, BTreeNode* root)
 	for (int i = MIN_KEYS + 1; i <= root->num_keys; i++) {
 		child_b->children[i - MIN_KEYS - 1] = root->children[i];
 		if (root->children[i] != 0) {
-			BTreeNode *child = (BTreeNode*)get_block(disk, cache, 0, root->children[i]);
-			child->parent = child_b->block_number;
+			BTreeNode child;
+			btree_node_read(disk, cache, root.children[i], &child);
+			child.parent = child_b->block_number;
+			btree_node_write(disk, cache, &child);
+			arc4random_buf(&child, sizeof(struct BTreeNode));
 		}
 	}
 	
 	if (root->children[MAX_KEYS] != 0) {
 		child_b->children[child_b->num_keys] = root->children[MAX_KEYS];
-		BTreeNode *child = (BTreeNode*)get_block(disk, cache, 0, root->children[MAX_KEYS]);
-		child->parent = child_b->block_number;
+		BTreeNode child;
+		btree_node_read(disk, cache, root.children[MAX_KEYS], &child);
+		child.parent = child_b->block_number;
+		btree_node_write(disk, cache, &child);
+		arc4random_buf(&child, sizeof(struct BTreeNode));
 	}
 	
 	root->is_leaf = false;
@@ -621,6 +645,7 @@ void btree_promote_root(DiskInterface* disk, cache *cache, BTreeNode* root)
 			btree_node_read(disk, cache, root->children[i], &child);
 			child.parent = root->block_number;
 			btree_node_write(disk, cache, &child);
+			arc4random_buf(&child, sizeof(struct BTreeNode));
 		}
 	}
 }
