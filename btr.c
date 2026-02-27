@@ -57,15 +57,24 @@ void btree_node_free(DiskInterface* disk, cache *cache, BTreeNode* node)
  */
 int btree_node_read(DiskInterface* disk, cache *cache, uint64_t block_num, BTreeNode* node)
 {
-	int rv;
-	BTreeNode *disk_node = (BTreeNode*)( (block_type_t*) (get_block(disk, cache, 0, block_num) + 1) );
+	block_type_t *block_type = (block_type_t*) get_block(disk, cache, 0, block_num);
+	if (*block_type != BLOCK_TYPE_BTREE_NODE)
+	{
+		fprintf(stderr, "ERROR: Not a valid B-Tree node!\n");
+		return -1;
+	}
+	BTreeNode *disk_node = (BTreeNode*)( block_type + 1 );
 	
 	// Copy node data from disk to memory structure
 	void *ptr = memcpy((char*)node, (char*)disk_node, sizeof(struct BTreeNode));
+
+	if (!ptr)
+	{
+		fprintf(stderr, "ERROR: Could not copy B-Tree node contents!\n");
+		return -1;
+	}
 	
-	rv = (ptr==NULL) ? -1 : 0;
-	
-	return rv;
+	return 0;
 }
 
 /**
