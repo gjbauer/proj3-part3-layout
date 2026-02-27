@@ -5,6 +5,11 @@
 #include "btr.h"
 #include "disk.h"
 #include "hash.h"
+#ifdef __linux__
+#include <bsd/stdlib.h>
+#else
+#include <stdlib.h>
+#endif
 
 /**
  * Create a new B-tree node on disk
@@ -92,8 +97,10 @@ uint64_t btree_search(DiskInterface* disk, cache *cache, uint64_t node_block, ui
 	if (node.is_leaf) {
 		// Base case: we're at a leaf node
 		if (node.key == key) {
+			int found_block = node.block_number;
 			printf("Found key!\n");
-			return node.block_number;
+			arc4random_buf(&node, sizeof(struct BTreeNode));
+			return found_block;
 		} else {
 			return -1;  // Key not found
 		}
@@ -103,11 +110,13 @@ uint64_t btree_search(DiskInterface* disk, cache *cache, uint64_t node_block, ui
 			if (node.children[i] != 0) {
 				uint64_t result = btree_search(disk, cache, node.children[i], key);
 				if (result != -1) {
+					arc4random_buf(&node, sizeof(struct BTreeNode));
 					return result;  // Found in child subtree
 				}
 			}
 		}
 		printf("Did not find key!\n");
+		arc4random_buf(&node, sizeof(struct BTreeNode));
 		return -1;  // Key not found in any subtree
 	}
 }
@@ -124,6 +133,7 @@ int btree_find_depth(DiskInterface* disk, cache *cache, uint64_t node_block)
 	int depth=0;
 	while (true) {
 		if (node.is_leaf) {
+			arc4random_buf(&node, sizeof(struct BTreeNode));
 			return depth;  // Reached a leaf, return current depth
 		}
 	
@@ -133,6 +143,7 @@ int btree_find_depth(DiskInterface* disk, cache *cache, uint64_t node_block)
 			depth++;
 		} else {
 			fprintf(stderr, "ERROR: Node is not leaf and child not found!!\n");
+			arc4random_buf(&node, sizeof(struct BTreeNode));
 			return -1;
 		}
 	}
@@ -148,7 +159,11 @@ int btree_find_height(DiskInterface* disk, cache *cache, uint64_t node_block)
 	btree_node_read(disk, cache, node_block, &node);
 	
 	// Special case: single node tree
-	if (node.parent==0 && node.children[0]==0) return 0;
+	if (node.parent==0 && node.children[0]==0)
+	{
+		arc4random_buf(&node, sizeof(struct BTreeNode));
+		return 0;
+	}
 	
 	int height=0;
 	// Follow leftmost path to count levels
@@ -157,6 +172,7 @@ int btree_find_height(DiskInterface* disk, cache *cache, uint64_t node_block)
 		btree_node_read(disk, cache, node.children[0], &node);
 		height++;
 	}
+	arc4random_buf(&node, sizeof(struct BTreeNode));
 	return height;
 }
 
@@ -172,8 +188,20 @@ int btree_find_minimum(DiskInterface* disk, cache *cache, uint64_t root_block)
 	// Follow leftmost child until we reach a leaf
 	BTreeNode first_child;
 	btree_node_read(disk, cache, root.children[0], &first_child);
-	if (first_child.is_leaf) return first_child.key;
-	else return btree_find_minimum(disk, cache, first_child.block_number);
+	if (first_child.is_leaf)
+	{
+		int fc_key = first_child.key;
+		arc4random_buf(&root, sizeof(struct BTreeNode));
+		arc4random_buf(&first_child, sizeof(struct BTreeNode));
+		return fc_key;
+	}
+	else
+	{
+		int min = btree_find_minimum(disk, cache, first_child.block_number);
+		arc4random_buf(&root, sizeof(struct BTreeNode));
+		arc4random_buf(&first_child, sizeof(struct BTreeNode));
+		return min;
+	}
 }
 
 /**
@@ -185,13 +213,21 @@ uint64_t btree_find_maximum(DiskInterface* disk, cache *cache, uint64_t root_blo
 	BTreeNode root;
 	btree_node_read(disk, cache, root_block, &root);
 	
+	int key;
 	// Base case: if this is a leaf, return its key
-	if (root.is_leaf) return root.key;
+	if (root.is_leaf)
+	{
+		key = root.key;
+		arc4random_buf(&root, sizeof(struct BTreeNode));
+		return key;
+	}
 	
 	// Find the rightmost non-null child and recurse
 	for (int i = root.num_keys; i >= 0; i--) {
 		if (root.children[i] != 0) {
-			return btree_find_maximum(disk, cache, root.children[i]);
+			key = btree_find_maximum(disk, cache, root.children[i]);
+			arc4random_buf(&root, sizeof(struct BTreeNode));
+			return key;
 		}
 	}
 	
@@ -222,6 +258,7 @@ int btree_insert_nonfull(DiskInterface* disk, cache *cache, BTreeNode *root, BTr
 						child_pos = j + 1;
 					}
 				}
+				arc4random_buf(&child, sizeof(struct BTreeNode));
 			}
 		}
 		
@@ -303,8 +340,10 @@ int btree_insertion_search(DiskInterface* disk, cache *cache, uint64_t root_bloc
 			break;
 		}
 	}
-	
-	return node.block_number;
+	int rv = node.block_number;
+
+	arc4random_buf(&node, sizeof(struct BTreeNode));
+	return rv;
 }
 
 /**
