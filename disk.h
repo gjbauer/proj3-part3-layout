@@ -47,6 +47,24 @@ int alloc_page(DiskInterface* disk, cache *cache);
 void free_page(DiskInterface* disk, cache *cache, int pnum);
 
 /**
+ * Read a block from disk into buffer
+ * @param disk Pointer to DiskInterface
+ * @param block_num Block number to read
+ * @param buffer Buffer to store block data
+ * @return 0 on success, -1 on failure
+ */
+int disk_read_block(DiskInterface* disk, uint64_t block_num, void* buffer);
+
+/**
+ * Write buffer data to a block on disk
+ * @param disk Pointer to DiskInterface
+ * @param block_num Block number to write
+ * @param buffer Buffer containing data to write
+ * @return 0 on success, -1 on failure
+ */
+int disk_write_block(DiskInterface* disk, uint64_t block_num, const void* buffer);
+
+/**
  * Format the disk with a new filesystem
  * @param disk Pointer to DiskInterface
  * @param volume_name Name for the new volume

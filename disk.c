@@ -110,6 +110,40 @@ free_page(DiskInterface* disk, cache *cache, int pnum)
 }
 
 /**
+ * Read a block from disk into a buffer
+ * Uses memory-mapped access for efficient copying
+ */
+int disk_read_block(DiskInterface* disk, uint64_t block_num, void* buffer)
+{
+	int rv = -1;
+	void *block = disk_get_block(disk, block_num);
+	
+	// Copy block data to user buffer
+	if (memcpy(buffer, block, BLOCK_SIZE)) {
+		rv = 0;
+	}
+	
+	return rv;
+}
+
+/**
+ * Write buffer data to a block on disk
+ * Uses memory-mapped access for efficient copying
+ */
+int disk_write_block(DiskInterface* disk, uint64_t block_num, const void* buffer)
+{
+	int rv = -1;
+	void *block = disk_get_block(disk, block_num);
+	
+	// Copy user buffer to block location
+	if (memcpy(block, buffer, BLOCK_SIZE)) {
+		rv = 0;
+	}
+	
+	return rv;
+}
+
+/**
  * Format the disk with a new filesystem
  * TODO: Implement filesystem formatting functionality
  */

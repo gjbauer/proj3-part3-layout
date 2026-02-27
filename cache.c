@@ -59,7 +59,7 @@ get_block(DiskInterface* disk, cache *cache, uint64_t inum, uint64_t pnum)
 		cache->cache[index].page_data = malloc(BLOCK_SIZE);
 		
 		// Load block data from disk into cache
-		printf("Copying page %lu into the cache!\n", pnum);
+		printf("Copying page %llu into the cache!\n", pnum);
 		disk_read_block(disk, pnum, cache->cache[index].page_data);
 		
 		// Add to LRU list (most recently used)
