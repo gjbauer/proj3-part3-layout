@@ -1,7 +1,7 @@
 CFLAGS = -g
 RM_FILES = cache_test my.img mkfs.nbtrfs
 # Cache files are optimized out of compilation for mkfs & for builds with CACHE_DISABLED macro...
-COMMON_FILES = bitmap.c btr.c cache.c disk.c dl.c fl.c gdl.c hash.c lru.c pci.c superblock.c
+COMMON_FILES = bitmap.c btr.c cache.c disk.c dl.c fl.c gdl.c hash.c lru.c pci.c superblock.c inode.c
 
 UNAME_S := $(shell uname -s)
 
@@ -12,7 +12,7 @@ endif
 
 # macOS-specific flags
 ifeq ($(UNAME_S), Darwin)
-    RM_FILES += cache_test.dSYM mkfs.nbtrfs.dSYM
+    RM_FILES += *.dSYM
 endif
 
 all:

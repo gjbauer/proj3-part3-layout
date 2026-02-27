@@ -61,53 +61,6 @@ disk_get_block(DiskInterface* disk, int pnum)
 }
 
 /**
- * Get pointer to the superblock (block 0)
- * Contains filesystem metadata and configuration
- */
-void*
-get_superblock(DiskInterface* disk)
-{
-	return disk_get_block(disk, 0);
-}
-
-/**
- * Get pointer to the block allocation bitmap
- * Tracks which blocks are free/allocated (currently in block 0)
- */
-void*
-disk_get_block_bitmap(DiskInterface* disk)
-{
-	return disk_get_block(disk, 0);
-}
-
-/**
- * Get pointer to the inode allocation bitmap
- * Tracks which inodes are free/allocated (block 2)
- */
-void*
-get_inode_bitmap(DiskInterface* disk)
-{
-	return disk_get_block(disk, 2);
-}
-
-/**
- * Get pointer to the start of the inode table
- * Contains filesystem inode structures (starting at block 3)
- */
-void*
-get_inode_start(DiskInterface* disk)
-{
-	return disk_get_block(disk, 3);
-}
-
-/* TODO: Implement get_root_start() function
- * void* get_root_start()
- * {
- *     return disk_get_block(disk, 6);  // Need minimum partition size and correct block offset for root inode
- * }
- */
-
-/**
  * Allocate a free block from the filesystem
  * Searches the block bitmap for the first available block
  */
@@ -154,40 +107,6 @@ free_page(DiskInterface* disk, cache *cache, int pnum)
 		fprintf(stderr, "ERROR: Selected block could not be freed!");
 	}
 	write_block(disk, cache, pbm, 0, pbmn );
-}
-
-/**
- * Read a block from disk into a buffer
- * Uses memory-mapped access for efficient copying
- */
-int disk_read_block(DiskInterface* disk, uint64_t block_num, void* buffer)
-{
-	int rv = -1;
-	void *block = disk_get_block(disk, block_num);
-	
-	// Copy block data to user buffer
-	if (memcpy(buffer, block, BLOCK_SIZE)) {
-		rv = 0;
-	}
-	
-	return rv;
-}
-
-/**
- * Write buffer data to a block on disk
- * Uses memory-mapped access for efficient copying
- */
-int disk_write_block(DiskInterface* disk, uint64_t block_num, const void* buffer)
-{
-	int rv = -1;
-	void *block = disk_get_block(disk, block_num);
-	
-	// Copy user buffer to block location
-	if (memcpy(block, buffer, BLOCK_SIZE)) {
-		rv = 0;
-	}
-	
-	return rv;
 }
 
 /**
