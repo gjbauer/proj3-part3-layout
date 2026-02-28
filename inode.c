@@ -94,6 +94,7 @@ int inode_free(DiskInterface* disk, cache *cache, uint64_t inode_number)
     int inode_per_page = USABLE_BLOCK_SIZE / sizeof(Inode);
     int inode_page = inode_number / inode_per_page;
     Inode *node = (Inode*) ( ( (block_type_t*) get_block(disk, cache, 0, ( sb.inode_bitmap + calculate_inode_bitmap_size(&sb) + inode_page ) ) + 1) + ( inode_number % inode_per_page ) );
+    // Use memset(0) because we want our inodes to contain 0 data upon initialization
     memset(node, 0, sizeof(struct Inode) );
     write_block(disk, cache, node, 0,  ( sb.inode_bitmap + calculate_inode_bitmap_size(&sb) + inode_page ) );
     printf("+ inode_free(%llu)\n", inode_number);
