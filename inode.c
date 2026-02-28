@@ -54,10 +54,6 @@ uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
     block_type_t *block_type = (block_type_t*) ibm;
 
 	// Search through all inodes to find first free one
-    /* TODO: Edit this to allow extra space in inode bitmap to be used if available.
-     * Would simply involve a slightly more complex calculation of available inodes
-     * or checking the block type of the current block to ensure it is a bitmap...
-     */
 	for (int ii = 0; BLOCK_TYPE_BITMAP == *block_type; ++ii) {
 		if ( !(ii % USABLE_BLOCK_SIZE) && ii )
 		{
@@ -79,6 +75,7 @@ uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
 		}
 	}
 
+    fprintf(stderr, "ERROR: No free inodes available for allocation!");
     arc4random_buf(&sb, sizeof(struct Superblock));
 	return -1;  // No free blocks available
 }
