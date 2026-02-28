@@ -78,9 +78,9 @@ alloc_page(DiskInterface* disk, cache *cache)
 			pbm = get_block(disk, cache, 0, pbmn);
 		}
 		if (!bitmap_get(pbm, ii - ((pbmn - 1) * USABLE_BLOCK_SIZE))) {  // Found a free block
-			if (bitmap_put(pbm, ii - ((pbmn - 1) * USABLE_BLOCK_SIZE), 1))
+			if (bitmap_put(pbm, ii - ((pbmn - 1) * USABLE_BLOCK_SIZE), 1))  // Mark it as allocated
 			{
-				fprintf(stderr, "ERROR: Could not allocate page!!");  // Mark it as allocated
+				fprintf(stderr, "ERROR: Could not allocate page!!");
 				return -1;
 			}
 			write_block(disk, cache, pbm, 0, pbmn );
