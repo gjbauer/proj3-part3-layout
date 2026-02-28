@@ -101,12 +101,12 @@ void
 free_page(DiskInterface* disk, cache *cache, int pnum)
 {
 	int pbmn = 1 + (pnum / USABLE_BLOCK_SIZE);
-	printf("+ free_page(%d)\n", pnum);
 	void* pbm = get_block(disk, cache, 0, pbmn );
 	if (bitmap_put(pbm, pnum - ((pbmn - 1) * USABLE_BLOCK_SIZE), 0))  // Mark block as free
 	{
 		fprintf(stderr, "ERROR: Selected block could not be freed!");
 	}
+	printf("+ free_page(%d)\n", pnum);
 	write_block(disk, cache, pbm, 0, pbmn );
 }
 

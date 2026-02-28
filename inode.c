@@ -54,7 +54,7 @@ uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
     block_type_t *block_type = (block_type_t*) ibm;
 
 	// Search through all inodes to find first free one
-	for (int ii = 0; BLOCK_TYPE_BITMAP == *block_type; ++ii) {
+	for (uint64_t ii = 0; BLOCK_TYPE_BITMAP == *block_type; ++ii) {
 		if ( !(ii % USABLE_BLOCK_SIZE) && ii )
 		{
 			ibmn++;
@@ -69,7 +69,7 @@ uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
 				return -1;
 			}
 			write_block(disk, cache, ibm, 0, ibmn );
-			printf("+ inode_allocate() -> %d\n", ii);
+			printf("+ inode_allocate() -> %llu\n", ii);
             arc4random_buf(&sb, sizeof(struct Superblock));
 			return ii - ((ibmn - sb.inode_bitmap) * USABLE_BLOCK_SIZE);
 		}
@@ -82,6 +82,24 @@ uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
 
 int inode_free(DiskInterface* disk, cache *cache, uint64_t inode_number)
 {
+    Superblock sb;
+    superblock_read(disk, cache, &sb);
+    int ibmn = sb.inode_bitmap + (inode_number / USABLE_BLOCK_SIZE);
+	void* ibm = get_block(disk, cache, 0, ibmn );
+	if (bitmap_put(ibm, inode_number - ((ibmn - 1) * USABLE_BLOCK_SIZE), 0))  // Mark block as free
+	{
+		fprintf(stderr, "ERROR: Selected block could not be freed!");
+	}
+    // Securely erase inode contents
+    int inode_per_page = USABLE_BLOCK_SIZE / sizeof(Inode);
+    int inode_page = inode_number / inode_per_page;
+    Inode *node = (Inode*) ( ( (block_type_t*) get_block(disk, cache, 0, ( sb.inode_bitmap + calculate_inode_bitmap_size(&sb) + inode_page ) ) + 1) + ( inode_number % inode_per_page ) );
+    memset(node, 0, sizeof(struct Inode) );
+    write_block(disk, cache, node, 0,  ( sb.inode_bitmap + calculate_inode_bitmap_size(&sb) + inode_page ) );
+    printf("+ inode_free(%llu)\n", inode_number);
+	write_block(disk, cache, ibm, 0, ibmn );
+    arc4random_buf(&sb, sizeof(struct Superblock));
+    return 0;
 }
 
 int inode_get_block(DiskInterface* disk, cache *cache, Inode* inode, uint64_t block_index, uint64_t* physical_block)
