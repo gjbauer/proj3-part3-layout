@@ -16,7 +16,7 @@
  */
 DiskInterface* disk_open(const char* filename)
 {
-	DiskInterface *disk = (DiskInterface*)malloc(sizeof(DiskInterface));
+	DiskInterface *disk = (DiskInterface*)malloc(sizeof(struct DiskInterface));
 	struct stat fs_info;
 	
 	// Get file size and other metadata

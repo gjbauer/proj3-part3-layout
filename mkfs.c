@@ -22,7 +22,7 @@ int main()
         block_type = (block_type_t*)get_block(disk, cache, 0, i);
         *block_type = BLOCK_TYPE_BITMAP;
     }
-    printf("Usable block size / inode size : %lu\n", USABLE_BLOCK_SIZE/sizeof(Inode));
+    printf("Usable block size / inode size : %lu\n", USABLE_BLOCK_SIZE/sizeof(struct Inode));
     printf("Allocating pages for superblock, bitmaps, and inode table...\n");
     for (int i=0; i < (superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock)) ; i++) alloc_page(disk, cache);
     superblock.free_blocks = superblock.total_blocks - (superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock));

@@ -10,7 +10,7 @@
 DL_LL *dl_push(DL_LL *list, uint64_t block_number)
 {
 	// Allocate new node
-	DL_LL *node = (DL_LL*)malloc(sizeof(DL_LL));
+	DL_LL *node = (DL_LL*)malloc(sizeof(struct DL_LL));
 	node->block_number = block_number;
 	
 	// Insert at head if list exists
@@ -76,7 +76,7 @@ void dl_insert(DL_HM *hashmap, uint64_t inode_number, uint64_t block_number)
 	DL_HM_LL *node = dl_lookup(hashmap, inode_number);
 	if (!node) {
 		// Create new inode entry
-		node = malloc(sizeof(DL_HM_LL));
+		node = malloc(sizeof(struct DL_HM_LL));
 		node->inode_number = inode_number;
 		node->list=NULL;
 		

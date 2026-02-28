@@ -32,7 +32,7 @@ int pci_lookup(PCI_HM *hashmap, uint64_t block_number)
 void pci_insert(PCI_HM *hashmap, uint64_t block_number, uint64_t index)
 {
 	// Create new node
-	PCI_LL *node = malloc(sizeof(PCI_LL));
+	PCI_LL *node = malloc(sizeof(struct PCI_LL));
 	node->block_number = block_number;
 	node->index = index;
 	

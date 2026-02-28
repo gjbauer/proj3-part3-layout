@@ -9,7 +9,7 @@ GDL *gdl_push(cache *cache, int index)
 {
 	GDL *list = cache->gdl;
 	// Allocate new node
-	GDL *node = (GDL*)malloc(sizeof(GDL));
+	GDL *node = (GDL*)malloc(sizeof(struct GDL));
 	node->index = index;
 	
 	if (cache->gdl_size>0)
