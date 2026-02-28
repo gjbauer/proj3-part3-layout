@@ -1,4 +1,5 @@
 CFLAGS = -I/usr/local/include -L/usr/local/lib -lsysinfo -g
+# Cache files are optimized out of compilation for mkfs & for builds with CACHE_DISABLED macro...
 COMMON_FILES = bitmap.c btr.c cache.c disk.c dl.c fl.c gdl.c hash.c lru.c pci.c superblock.c inode.c
 
 all:
