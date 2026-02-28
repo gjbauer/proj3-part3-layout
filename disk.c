@@ -89,6 +89,7 @@ alloc_page(DiskInterface* disk, cache *cache)
 		}
 	}
 
+	fprintf(stderr, "ERROR: No free blocks available for allocation!");
 	return -1;  // No free blocks available
 }
 
