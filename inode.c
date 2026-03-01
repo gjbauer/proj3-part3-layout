@@ -105,8 +105,24 @@ int inode_free(DiskInterface* disk, cache *cache, uint64_t inode_number)
 
 int inode_get_block(DiskInterface* disk, cache *cache, Inode* inode, uint64_t block_index, uint64_t* physical_block)
 {
+    int rv = -1;
+    if (block_index < 12)
+    {
+        *physical_block = inode->direct_blocks[block_index];
+        rv = 0;
+    }
+    // TODO: Implement indirect and double indirect blocks
+    return rv;
 }
 
 int inode_set_block(DiskInterface* disk, cache *cache, Inode* inode, uint64_t block_index, uint64_t physical_block)
 {
+    int rv = -1;
+    if (block_index < 12)
+    {
+        inode->direct_blocks[block_index] = physical_block;
+        rv = 0;
+    }
+    // TODO: Implement indirect and double indirect blocks
+    return rv;
 }

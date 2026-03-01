@@ -248,6 +248,7 @@ uint64_t btree_find_maximum(DiskInterface* disk, cache *cache, uint64_t root_blo
 		}
 	}
 	
+	arc4random_buf(&root, sizeof(struct BTreeNode));
 	return 0;  // Should not reach here in a valid tree
 }
 
