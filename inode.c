@@ -109,7 +109,7 @@ int inode_get_block(DiskInterface* disk, cache *cache, Inode* inode, uint64_t bl
     if (block_index < 12)
     {
         *physical_block = inode->direct_blocks[block_index];
-        rv = 0;
+        if ( inode->direct_blocks[block_index] != 0 ) rv = 0;
     }
     // TODO: Implement indirect and double indirect blocks
     return rv;
