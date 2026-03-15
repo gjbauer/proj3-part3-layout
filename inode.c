@@ -83,6 +83,7 @@ uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
 			write_block(disk, cache, ibm, 0, ibmn );
 			printf("+ inode_allocate() -> %llu\n", ii);
 			rv = ii - ((ibmn - sb.inode_bitmap) * USABLE_BLOCK_SIZE);
+            goto wipe_inode;
 		}
 	}
 
