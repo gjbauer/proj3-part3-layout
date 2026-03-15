@@ -34,11 +34,12 @@ int main()
     printf("Free blocks: %llu\n", superblock.free_blocks);
     printf("Usable block size / inode size : %lu\n", USABLE_BLOCK_SIZE/sizeof(struct Inode));
 
+    printf("Creating root tree node...\n");
+    uint64_t page;
+    BTreeNode *root = btree_node_create(disk, cache, false, &page);
+    root->value = inode_allocate(disk, cache, FILE_TYPE_DIRECTORY);
+    superblock.btree_root = page;
+
     printf("Writing superblock...\n");
     superblock_write(disk, cache, &superblock);
-
-    printf("Creating root tree node...\n");
-    BTreeNode *root = btree_node_create(disk, cache, false);
-    root->value = inode_allocate(disk, cache, FILE_TYPE_DIRECTORY);
-
 }

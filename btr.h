@@ -38,7 +38,7 @@ typedef struct BTreeNode {
  * @param is_leaf Whether the new node should be a leaf
  * @return Pointer to newly created node
  */
-BTreeNode* btree_node_create(DiskInterface* disk, cache *cache, bool is_leaf);
+BTreeNode* btree_node_create(DiskInterface* disk, cache *cache, bool is_leaf, uint64_t* page);
 
 /**
  * Free a B-tree node and return its disk block to free pool

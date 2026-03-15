@@ -1,4 +1,6 @@
 #include "hash.h"
+#include "superblock.h"
+#include <stdlib.h>
 
 /**
  * FNV-1a hash function implementation for filesystem path hashing
@@ -15,5 +17,21 @@ uint64_t path_hash(const char *path) {
     }
     
     return hash;
+}
+
+/**
+ * This function takes a given absolute path and returns the corresponding
+ * inode and, if a directory, new B-Tree root as found in the B-Tree search process.
+ */
+InodeBtreePair * item_search(DiskInterface* disk, cache *cache, const char *path)
+{
+    InodeBtreePair *pair = malloc(sizeof(struct InodeBtreePair));
+    const char delimiter[] = "/";
+    Superblock sb;
+    superblock_read(disk, cache, &sb);
+    
+    
+    
+    return pair;
 }
 

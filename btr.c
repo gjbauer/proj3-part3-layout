@@ -15,18 +15,18 @@
  * Create a new B-tree node on disk
  * Allocates a disk block and initializes the node structure
  */
-BTreeNode* btree_node_create(DiskInterface* disk, cache *cache, bool is_leaf)
+BTreeNode* btree_node_create(DiskInterface* disk, cache *cache, bool is_leaf, uint64_t* page)
 {
 	// Allocate a new disk block for this node
-	int page = alloc_page(disk, cache);
+	*page = alloc_page(disk, cache);
 	
 	// Get pointer to the allocated block
-	block_type_t *block_type = (block_type_t*)get_block(disk, cache, 0, page);
+	block_type_t *block_type = (block_type_t*)get_block(disk, cache, 0, *page);
 	*block_type = BLOCK_TYPE_BTREE_NODE;
 	BTreeNode *node = (BTreeNode*)( (block_type_t*) block_type + 1 );
 	
 	// Initialize node metadata
-	node->block_number = page;
+	node->block_number = *page;
 	node->is_leaf = is_leaf;
 	node->key = 0;
 	node->num_keys = 0;
@@ -388,7 +388,8 @@ void btree_update_parent_keys(DiskInterface* disk, cache *cache, BTreeNode* node
 
 int btree_insert(DiskInterface* disk, cache *cache, uint64_t root_block, uint64_t key, uint64_t value)
 {
-	BTreeNode *node = btree_node_create(disk, cache, true);
+    uint64_t page;
+	BTreeNode *node = btree_node_create(disk, cache, true, &page);
 	node->key = key;
 	node->value = value;
 	
@@ -577,8 +578,9 @@ int btree_delete(DiskInterface* disk, cache *cache, uint64_t root_block, uint64_
 
 void btree_split_root(DiskInterface* disk, cache *cache, BTreeNode* root)
 {
-	BTreeNode *child_a = btree_node_create(disk, cache, false);
-	BTreeNode *child_b = btree_node_create(disk, cache, false);
+    uint64_t page;
+    BTreeNode *child_a = btree_node_create(disk, cache, false, &page);
+	BTreeNode *child_b = btree_node_create(disk, cache, false, &page);
 	child_a->right_sibling = child_b->block_number;
 	child_b->left_sibling = child_a->block_number;
 	
@@ -671,7 +673,8 @@ void btree_promote_root(DiskInterface* disk, cache *cache, BTreeNode* root)
 
 void btree_split_child(DiskInterface* disk, cache *cache, BTreeNode* node, int index, BTreeNode* child)
 {
-	BTreeNode *child_b = btree_node_create(disk, cache, false);
+    uint64_t page;
+	BTreeNode *child_b = btree_node_create(disk, cache, false, &page);
 	child_b->parent = node->block_number;
 	child->right_sibling = child_b->block_number;
 	child_b->left_sibling = child->block_number;
@@ -858,7 +861,8 @@ void btree_print(DiskInterface* disk, cache *cache, uint64_t root_block, int lev
 	// Open disk image and initialize B-tree
 	DiskInterface* disk = disk_open("my.img");
 	alloc_page(disk);  // Reserve block 0
-	BTreeNode *root = btree_node_create(disk, cache, false);  // Create root as internal node
+    uint64_t page;
+	BTreeNode *root = btree_node_create(disk, cache, false, &page);  // Create root as internal node
 	
 	// Interactive loop for testing B-tree operations
 	while (true) {
