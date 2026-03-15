@@ -3,14 +3,14 @@
 
 #include "config.h"
 #include "disk.h"
+#include <limits.h>
+#include "types.h"
 
 // Directory entry structure
 typedef struct DirEntry {
     uint64_t inode_number;           // Inode number of the entry
-    char name[MAX_FILENAME_LENGTH];  // Name of the entry
-    // TODO: Declare a maximum filename length or use MAX_PATH
-    uint8_t name_length;             // Length of the name
-    uint8_t entry_type;              // Type of entry (file, dir, etc.)
+    char name[NAME_MAX];             // Name of the entry
+    FileType type;                   // Type of entry (file, dir, etc.)
 } DirEntry;
 
 // Directory block structure
