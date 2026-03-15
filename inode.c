@@ -75,6 +75,13 @@ uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
                 goto wipe_inode;
                 return -1;
             }
+            node.type=type;
+            if (inode_write(disk, cache, &node))
+            {
+                fprintf(stderr, "ERROR: Could not write inode!!");
+                goto wipe_inode;
+                return -1;
+            }
 			write_block(disk, cache, ibm, 0, ibmn );
 			printf("+ inode_allocate() -> %llu\n", ii);
             arc4random_buf(&sb, sizeof(struct Superblock));
