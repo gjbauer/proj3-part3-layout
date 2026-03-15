@@ -25,7 +25,7 @@ int main()
         *block_type = BLOCK_TYPE_BITMAP;
     }
     printf("Setting block types to INODE for inode table blocks...\n");
-    for (int i=superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock); i < ( superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock) ) i++ )
+    for (int i=superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock); i < ( superblock.inode_bitmap+calculate_inode_bitmap_size(&superblock)+calculate_inode_table_size(&superblock) ); i++ )
     {
         block_type = (block_type_t*)get_block(disk, cache, 0, i);
         *block_type = BLOCK_TYPE_INODE;
@@ -39,7 +39,6 @@ int main()
 
     printf("Creating root tree node...\n");
     BTreeNode *root = btree_node_create(disk, cache, false);
-    printf("Creating leaf node for root directory with key %llu\n", path_hash("/"));
-    btree_insert(disk, cache, root->block_number, path_hash("/"), 0);   // TODO: Implement inode functions and set the value argument to the allocated page
+    root->value = inode_allocate(disk, cache, FILE_TYPE_DIRECTORY);
 
 }

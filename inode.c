@@ -48,6 +48,7 @@ int inode_write(DiskInterface* disk, cache *cache, const Inode* inode)
 uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
 {
     Superblock sb;
+    Inode node;
     superblock_read(disk, cache, &sb);
     int ibmn = sb.inode_bitmap;
 	void* ibm = get_block(disk, cache, 0, ibmn);
@@ -65,9 +66,15 @@ uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
 			if (bitmap_put(ibm, ii - ((ibmn - sb.inode_bitmap) * USABLE_BLOCK_SIZE), 1))  // Mark it as allocated
 			{
 				fprintf(stderr, "ERROR: Could not allocate inode!!");
-                arc4random_buf(&sb, sizeof(struct Superblock));
+                goto wipe_superblock;
 				return -1;
 			}
+            if (inode_read(disk, cache, ((ibmn - sb.inode_bitmap) * USABLE_BLOCK_SIZE), &node))
+            {
+                fprintf(stderr, "ERROR: Could not read inode!!");
+                goto wipe_inode;
+                return -1;
+            }
 			write_block(disk, cache, ibm, 0, ibmn );
 			printf("+ inode_allocate() -> %llu\n", ii);
             arc4random_buf(&sb, sizeof(struct Superblock));
@@ -76,6 +83,9 @@ uint64_t inode_allocate(DiskInterface* disk, cache *cache, FileType type)
 	}
 
     fprintf(stderr, "ERROR: No free inodes available for allocation!");
+wipe_inode:
+    arc4random_buf(&node, sizeof(struct Inode));
+wipe_superblock:
     arc4random_buf(&sb, sizeof(struct Superblock));
 	return -1;  // No free blocks available
 }

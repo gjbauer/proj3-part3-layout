@@ -19,7 +19,7 @@ typedef struct BTreeNode {
     uint64_t block_number;		// Physical block number on disk where this node is stored
     bool is_leaf;			// Whether this is a leaf node (contains actual data)
     uint64_t key;			// Actual key of node (used when node is leaf)
-    uint64_t value;			// Associated value for key-value pairs (B+Tree indexes file and directory inodes)
+    uint64_t value;			// Associated value for key-value pairs (B+Tree indexes file/directory inodes and other B-Trees)
     uint16_t num_keys;			// Current number of keys stored in this node
     uint64_t keys[MAX_KEYS];		// Array of keys (could be inode numbers or other identifiers)
     uint64_t children[MAX_KEYS + 1];	// Array of child block numbers (internal nodes only)
