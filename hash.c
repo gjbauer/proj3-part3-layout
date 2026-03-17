@@ -1,6 +1,7 @@
 #include "hash.h"
 #include "superblock.h"
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * FNV-1a hash function implementation for filesystem path hashing
@@ -28,10 +29,29 @@ InodeBtreePair * item_search(DiskInterface* disk, cache *cache, const char *path
     InodeBtreePair *pair = malloc(sizeof(struct InodeBtreePair));
     const char delimiter[] = "/";
     Superblock sb;
+    BTreeNode node;
+    char path[PATH_MAX];
+    
     superblock_read(disk, cache, &sb);
     
+    btree_node_read(disk, cache, sb.btree_root, &node);
+    if (!strcmp("/", path))
+    {
+        pair->inode_number = node.value;
+        pair->block_number = node.block_number;
+        goto return_pair;
+    }
     
+    char *token = strtok(path, delimiter);
+    uint64_t node_block;
     
+    while (token != NULL) {
+        node_block = btree_search(disk, cache, node.block_number, path_hash(token));
+        printf("%s\n", token);
+        token = strtok(NULL, delimiter);
+    }
+    
+return_pair:
     return pair;
 }
 
