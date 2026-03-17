@@ -60,11 +60,12 @@ InodeBtreePair * item_search(DiskInterface* disk, cache *cache, const char *path
             snprintf(curr_path, sizeof(curr_path), "%s/%s", curr_path, token);
             btree_node_read(disk, cache, node_block, &node);
             node_block = node.value;
-            btree_node_read(disk, cache, node_block, &node);
+            // If not a directory, this will not be a valid B-Tree node, and its contents will not copy...
+            if (!btree_node_read(disk, cache, node_block, &node)) pair->btree_block = node.block_number;
+            else pair->btree_block = 0;
             if (!strcmp(path, curr_path))
             {
                 pair->inode_number = node.value;
-                pair->btree_block = node.block_number;
                 goto wipe_token;
             }
         }

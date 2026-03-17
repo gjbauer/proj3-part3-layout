@@ -119,7 +119,7 @@ uint64_t btree_search(DiskInterface* disk, cache *cache, uint64_t node_block, ui
 			arc4random_buf(&node, sizeof(struct BTreeNode));
 			return found_block;
 		} else {
-			return -1;  // Key not found
+			return 0;  // Key not found
 		}
 	} else {
 		// Recursive case: search all children
@@ -134,7 +134,7 @@ uint64_t btree_search(DiskInterface* disk, cache *cache, uint64_t node_block, ui
 		}
 		printf("Did not find key!\n");
 		arc4random_buf(&node, sizeof(struct BTreeNode));
-		return -1;  // Key not found in any subtree
+		return 0;  // Key not found in any subtree
 	}
 }
 
