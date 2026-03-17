@@ -65,18 +65,19 @@ InodeBtreePair * item_search(DiskInterface* disk, cache *cache, const char *path
             {
                 pair->inode_number = node.value;
                 pair->btree_block = node.block_number;
-                goto return_pair;
+                goto wipe_token;
             }
         }
         token = strtok(NULL, delimiter);
     }
     
     fprintf(stderr, "ERROR: Path not found!!\n");
+wipe_token:
+    arc4random_buf(&token, sizeof(token));
 return_pair:
     arc4random_buf(&sb, sizeof(struct Superblock));
     arc4random_buf(&node, sizeof(struct BTreeNode));
     arc4random_buf(&curr_path, sizeof(curr_path));
-    arc4random_buf(&token, sizeof(token));
     return pair;
 }
 
