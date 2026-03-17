@@ -1,5 +1,8 @@
 #include "hash.h"
 #include "superblock.h"
+#ifdef __linux__
+#include <bsd/stdlib.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include "btr.h"
@@ -70,6 +73,10 @@ InodeBtreePair * item_search(DiskInterface* disk, cache *cache, const char *path
     
     fprintf(stderr, "ERROR: Path not found!!\n");
 return_pair:
+    arc4random_buf(&sb, sizeof(struct Superblock));
+    arc4random_buf(&node, sizeof(struct BTreeNode));
+    arc4random_buf(&curr_path, sizeof(curr_path));
+    arc4random_buf(&token, sizeof(token));
     return pair;
 }
 
