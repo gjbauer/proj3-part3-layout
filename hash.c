@@ -2,6 +2,8 @@
 #include "superblock.h"
 #include <stdlib.h>
 #include <string.h>
+#include "btr.h"
+#include <limits.h>
 
 /**
  * FNV-1a hash function implementation for filesystem path hashing
@@ -30,27 +32,43 @@ InodeBtreePair * item_search(DiskInterface* disk, cache *cache, const char *path
     const char delimiter[] = "/";
     Superblock sb;
     BTreeNode node;
-    char path[PATH_MAX];
+    char curr_path[PATH_MAX];
     
+    pair->inode_number = 0;
+    pair->btree_block = 0;
     superblock_read(disk, cache, &sb);
-    
     btree_node_read(disk, cache, sb.btree_root, &node);
+    
     if (!strcmp("/", path))
     {
         pair->inode_number = node.value;
-        pair->block_number = node.block_number;
+        pair->btree_block = node.block_number;
         goto return_pair;
     }
     
-    char *token = strtok(path, delimiter);
+    char *token = strtok((char*)path, delimiter);
     uint64_t node_block;
     
     while (token != NULL) {
+        printf("Searching for %s\n", token);
         node_block = btree_search(disk, cache, node.block_number, path_hash(token));
-        printf("%s\n", token);
+        if (node_block)
+        {
+            snprintf(curr_path, sizeof(curr_path), "%s/%s", curr_path, token);
+            btree_node_read(disk, cache, node_block, &node);
+            node_block = node.value;
+            btree_node_read(disk, cache, node_block, &node);
+            if (!strcmp(path, curr_path))
+            {
+                pair->inode_number = node.value;
+                pair->btree_block = node.block_number;
+                goto return_pair;
+            }
+        }
         token = strtok(NULL, delimiter);
     }
     
+    fprintf(stderr, "ERROR: Path not found!!\n");
 return_pair:
     return pair;
 }
